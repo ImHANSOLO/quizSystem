@@ -11,8 +11,21 @@ import java.util.Map;
 @AllArgsConstructor
 @ToString
 public class Question {
-    private int id;
+    private int questionId;
+    private int categoryId;
     private String description;
-    private List<Choice> choices;
-    private int correctChoiceId;
+    private boolean isActive;
+
+    // Getters & Setters
+    public int getQuestionId() { return questionId; }
+    public void setQuestionId(int questionId) { this.questionId = questionId; }
+
+    public int getCategoryId() { return categoryId; }
+    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
 }

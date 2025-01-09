@@ -1,6 +1,6 @@
 package com.bfs.logindemo.config;
 
-import com.bfs.logindemo.filter.LoginFilter;
+//import com.bfs.logindemo.filter.LoginFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -14,17 +14,16 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private LoginFilter loginFilter;
+//    private LoginFilter loginFilter;
 
-    @Autowired
-    public WebMvcConfig(LoginFilter loginFilter) {
-        this.loginFilter = loginFilter;
-    }
+//    @Autowired
+//    public WebMvcConfig() {
+//    }
 
     @Bean
     public InternalResourceViewResolver viewResolver() {
         InternalResourceViewResolver resolver = new InternalResourceViewResolver();
-        resolver.setPrefix("/WEB-INF/jsp/");
+        resolver.setPrefix("/WEB-INF/views/jsp/");
         resolver.setSuffix(".jsp");
         return resolver;
     }

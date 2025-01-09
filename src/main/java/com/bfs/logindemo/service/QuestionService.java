@@ -1,38 +1,46 @@
 package com.bfs.logindemo.service;
 
 import com.bfs.logindemo.dao.QuestionDao;
-import com.bfs.logindemo.domain.Choice;
 import com.bfs.logindemo.domain.Question;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 public class QuestionService {
+
     private final QuestionDao questionDao;
 
-    @Autowired
     public QuestionService(QuestionDao questionDao) {
         this.questionDao = questionDao;
     }
 
-    public Question getQuestion() {
-        return questionDao.getQuestion();
+    public List<Question> findAllQuestions() {
+        return questionDao.findAll();
     }
 
-    public String checkAnswer(Choice selectedChoice) {
-        Question question = questionDao.getQuestion();
-        Choice correctChoice = question.getChoices().get(question.getCorrectChoiceId() - 1);
-        return selectedChoice.equals(correctChoice) ? "Correct!" : "Incorrect";
+    public List<Question> findByCategory(int categoryId) {
+        return questionDao.findByCategory(categoryId);
     }
 
-    public Optional<Choice> getChoiceById(Integer selectedChoiceId) {
-        return questionDao
-                .getQuestion()
-                .getChoices()
-                .stream()
-                .filter(choice -> choice.getId() == selectedChoiceId)
-                .findFirst();
+    public Question findById(int questionId) {
+        return questionDao.findById(questionId);
+    }
+
+    public void createQuestion(Question question) {
+        questionDao.save(question);
+    }
+
+    public void updateQuestion(Question question) {
+        questionDao.update(question);
+    }
+
+    public void deleteQuestion(int questionId) {
+        questionDao.delete(questionId);
+    }
+
+    // Activate or deactivate a topic
+    public void setQuestionActive(int questionId, boolean active) {
+        questionDao.setActive(questionId, active);
     }
 }
