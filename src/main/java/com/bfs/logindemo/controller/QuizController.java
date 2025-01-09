@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
@@ -21,7 +22,6 @@ public class QuizController {
         this.quizService = quizService;
     }
 
-    // quiz starts
     @PostMapping("/start")
     public String startQuiz(@RequestParam int categoryId,
                             @RequestParam String quizName,
@@ -33,33 +33,53 @@ public class QuizController {
         return "redirect:/quiz/do?quizId=" + quizId;
     }
 
-    // question page
     @GetMapping("/do")
-    public String doQuiz(@RequestParam int quizId, HttpSession session, Model model) {
+    public String doQuiz(@RequestParam int quizId,
+                         HttpSession session,
+                         Model model) {
         User user = (User) session.getAttribute("loggedUser");
-        if (user == null) return "redirect:/";
-
+        if (user == null) {
+            return "redirect:/";
+        }
         Quiz quiz = quizService.findQuizById(quizId);
         if (quiz == null || quiz.getUserId() != user.getUserId()) {
             return "redirect:/home";
         }
-        List<QuizQuestion> qqList = quizService.findQuizQuestions(quizId);
 
+        // load quizQuestions & each question + choices
+        List<QuizQuestion> qqList = quizService.findQuizQuestions(quizId);
         model.addAttribute("quiz", quiz);
         model.addAttribute("quizQuestions", qqList);
         return "quiz";
     }
 
-    // quiz ends
     @PostMapping("/submit")
-    public String submitQuiz(@RequestParam int quizId) {
-        // calculate the score based on the options selected by the user
+    public String submitQuiz(
+            @RequestParam int quizId,
+            HttpSession session,
+            HttpServletRequest request
+    ) {
+        User user = (User) session.getAttribute("loggedUser");
+        if (user == null) {
+            return "redirect:/";
+        }
+
+        List<QuizQuestion> qqList = quizService.findQuizQuestions(quizId);
+
+        for (QuizQuestion qq : qqList) {
+            String paramName = "userChoice_" + qq.getQqId();
+            String choiceIdStr = request.getParameter(paramName);
+            if (choiceIdStr != null && !choiceIdStr.isEmpty()) {
+                int choiceId = Integer.parseInt(choiceIdStr);
+                // update the DB
+                quizService.updateUserChoice(qq.getQqId(), choiceId);
+            }
+        }
         quizService.endQuiz(quizId);
-        // redirect to result page
         return "redirect:/quiz/result?quizId=" + quizId;
     }
 
-    // result page
+
     @GetMapping("/result")
     public String quizResult(@RequestParam int quizId,
                              HttpSession session,
@@ -72,17 +92,12 @@ public class QuizController {
             return "redirect:/home";
         }
 
-        // find quizQuestions
         List<QuizQuestion> qqList = quizService.findQuizQuestions(quizId);
-
-        // compute pass/fail
-        // we do a new method in quizService
         boolean pass = quizService.isPass(qqList);
 
         model.addAttribute("quiz", quiz);
         model.addAttribute("quizQuestions", qqList);
         model.addAttribute("passFail", pass ? "PASS" : "FAIL");
-
         return "result";
     }
 }

@@ -20,8 +20,12 @@ public class QuizQuestionDao {
         qq.setQqId(rs.getInt("qq_id"));
         qq.setQuizId(rs.getInt("quiz_id"));
         qq.setQuestionId(rs.getInt("question_id"));
-        int choiceId = rs.getInt("user_choice_id");
-        qq.setUserChoiceId(rs.wasNull() ? null : choiceId);
+        int userChoiceId = rs.getInt("user_choice_id");
+        if (rs.wasNull()) {
+            qq.setUserChoiceId(null);
+        } else {
+            qq.setUserChoiceId(userChoiceId);
+        }
         return qq;
     };
 

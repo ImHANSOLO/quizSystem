@@ -1,31 +1,49 @@
 package com.bfs.logindemo.domain;
 
-import lombok.*;
-
+import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-public class Question {
+public class Question implements Serializable {
     private int questionId;
     private int categoryId;
     private String description;
-    private boolean isActive;
+    private boolean active;
 
-    // Getters & Setters
-    public int getQuestionId() { return questionId; }
-    public void setQuestionId(int questionId) { this.questionId = questionId; }
+    // For front-end display
+    private List<Choice> choices; // the possible answers
 
-    public int getCategoryId() { return categoryId; }
-    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
+    public int getQuestionId() {
+        return questionId;
+    }
+    public void setQuestionId(int questionId) {
+        this.questionId = questionId;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public int getCategoryId() {
+        return categoryId;
+    }
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
 
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
+    public String getDescription() {
+        return description;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public List<Choice> getChoices() {
+        return choices;
+    }
+    public void setChoices(List<Choice> choices) {
+        this.choices = choices;
+    }
 }

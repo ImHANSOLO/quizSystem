@@ -1,13 +1,7 @@
 package com.bfs.logindemo.service;
 
-import com.bfs.logindemo.dao.QuizDao;
-import com.bfs.logindemo.dao.QuizQuestionDao;
-import com.bfs.logindemo.dao.QuestionDao;
-import com.bfs.logindemo.dao.ChoiceDao; // <-- assume you have a ChoiceDao
-import com.bfs.logindemo.domain.Choice;
-import com.bfs.logindemo.domain.Question;
-import com.bfs.logindemo.domain.Quiz;
-import com.bfs.logindemo.domain.QuizQuestion;
+import com.bfs.logindemo.dao.*;
+import com.bfs.logindemo.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,7 +12,7 @@ public class QuizService {
     private final QuizDao quizDao;
     private final QuizQuestionDao quizQuestionDao;
     private final QuestionDao questionDao;
-    private final ChoiceDao choiceDao; // we need for isCorrectChoice
+    private final ChoiceDao choiceDao;
 
     public QuizService(QuizDao quizDao,
                        QuizQuestionDao quizQuestionDao,
@@ -31,6 +25,7 @@ public class QuizService {
     }
 
     public int startQuiz(int userId, int categoryId, String quizName) {
+        // create a new quiz record
         Quiz quiz = new Quiz();
         quiz.setUserId(userId);
         quiz.setCategoryId(categoryId);
@@ -38,13 +33,14 @@ public class QuizService {
         quiz.setTimeStart(LocalDateTime.now());
         quizDao.createQuiz(quiz);
 
-        // get newly created quiz
+        // find newly created quiz
         List<Quiz> userQuizzes = quizDao.findByUser(userId);
         Quiz createdQuiz = userQuizzes.get(userQuizzes.size() - 1);
         int quizId = createdQuiz.getQuizId();
 
-        // pick questions
+        // pick questions from that category
         List<Question> questionList = questionDao.findByCategory(categoryId);
+        // only up to 5
         for (int i = 0; i < Math.min(5, questionList.size()); i++) {
             Question q = questionList.get(i);
             QuizQuestion qq = new QuizQuestion();
@@ -64,16 +60,49 @@ public class QuizService {
         return quizDao.findById(quizId);
     }
 
+    // load QuizQuestion，and load Question + choices for every QQ
     public List<QuizQuestion> findQuizQuestions(int quizId) {
-        return quizQuestionDao.findByQuiz(quizId);
+        List<QuizQuestion> qqList = quizQuestionDao.findByQuiz(quizId);
+        for (QuizQuestion qq : qqList) {
+            // load question
+            Question question = questionDao.findById(qq.getQuestionId());
+            if (question != null) {
+                // load choice list
+                List<Choice> choiceList = choiceDao.findByQuestion(question.getQuestionId());
+                question.setChoices(choiceList);
+            }
+            qq.setQuestion(question);
+        }
+        return qqList;
     }
 
-    public List<Quiz> findAllQuizzes() {
-        return quizDao.findAll();
+    // update user_choice_id while submitting
+    public void updateUserChoice(int qqId, Integer choiceId) {
+        quizQuestionDao.updateUserChoice(qqId, choiceId);
+    }
+
+    // pass/fail checks
+    public boolean isPass(List<QuizQuestion> qqList) {
+        int correctCount = 0;
+        for (QuizQuestion qq : qqList) {
+            if (isCorrectChoice(qq)) {
+                correctCount++;
+            }
+        }
+        return (correctCount >= 3);
+    }
+    private boolean isCorrectChoice(QuizQuestion qq) {
+        if (qq.getUserChoiceId() == null) return false;
+        Choice c = choiceDao.findById(qq.getUserChoiceId());
+        return (c != null && c.isCorrect());
     }
 
     public List<Quiz> findByUser(int userId) {
         return quizDao.findByUser(userId);
+    }
+
+    public List<Quiz> findAllQuizzes() {
+        return quizDao.findAll();
     }
 
     public List<Quiz> findQuizzesByUser(int userId) {
@@ -82,26 +111,5 @@ public class QuizService {
 
     public List<Quiz> findQuizzesByCategory(int categoryId) {
         return quizDao.findByCategory(categoryId);
-    }
-
-    // new method to determine pass/fail
-    public boolean isPass(List<QuizQuestion> quizQuestions) {
-        int correctCount = 0;
-        for (QuizQuestion qq : quizQuestions) {
-            if (isCorrectChoice(qq)) {
-                correctCount++;
-            }
-        }
-        // pass if correctCount >= 3
-        return (correctCount >= 3);
-    }
-
-    // helper to check if user_choice_id is the correct choice
-    public boolean isCorrectChoice(QuizQuestion qq) {
-        if (qq.getUserChoiceId() == null) {
-            return false;
-        }
-        Choice c = choiceDao.findById(qq.getUserChoiceId());
-        return (c != null && c.isCorrect());
     }
 }
