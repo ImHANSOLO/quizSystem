@@ -28,14 +28,6 @@ public class AuthController {
         return "login";
     }
 
-//    @GetMapping("/login/data")
-//    @ResponseBody
-//    public String showLoginPage2() {
-//        System.out.println("show login page2");
-//        return "login";
-//    }
-
-
     @PostMapping("/login")
     public String doLogin(@RequestParam String email,
                           @RequestParam String password,
@@ -44,7 +36,13 @@ public class AuthController {
         User user = userService.login(email, password);
         if (user != null) {
             session.setAttribute("loggedUser", user);
-            return "redirect:/home";
+
+            // check admin
+            if (user.isAdmin()) {
+                return "redirect:/admin/home";
+            } else {
+                return "redirect:/home";
+            }
         } else {
             model.addAttribute("error", "Invalid email or password or user not active");
             return "login";

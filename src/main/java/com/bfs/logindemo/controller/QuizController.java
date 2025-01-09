@@ -72,10 +72,17 @@ public class QuizController {
             return "redirect:/home";
         }
 
+        // find quizQuestions
         List<QuizQuestion> qqList = quizService.findQuizQuestions(quizId);
+
+        // compute pass/fail
+        // we do a new method in quizService
+        boolean pass = quizService.isPass(qqList);
 
         model.addAttribute("quiz", quiz);
         model.addAttribute("quizQuestions", qqList);
+        model.addAttribute("passFail", pass ? "PASS" : "FAIL");
+
         return "result";
     }
 }

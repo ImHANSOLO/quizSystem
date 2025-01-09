@@ -6,6 +6,9 @@
     <title>Login</title>
 </head>
 <body>
+
+<jsp:include page="/WEB-INF/views/jsp/partials/navbar.jsp" />
+
 <h2>Login</h2>
 <c:if test="${not empty error}">
     <p style="color:red;"><c:out value="${error}" /></p>
@@ -18,8 +21,10 @@
 </form>
 <br/>
 <a href="${pageContext.request.contextPath}/register">Register</a>
+
 </body>
 </html>
+
 
 <%--<%@ page contentType="text/html;charset=UTF-8" language="java" %>--%>
 <%--<html>--%>

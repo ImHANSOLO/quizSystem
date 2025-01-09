@@ -31,13 +31,16 @@ public class QuizDao {
     };
 
     public int createQuiz(Quiz quiz) {
-        String sql = "INSERT INTO Quiz (user_id, category_id, name, time_start) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Quiz (user_id, category_id, name, time_start, time_end) VALUES (?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
                 quiz.getUserId(),
                 quiz.getCategoryId(),
                 quiz.getName(),
-                Timestamp.valueOf(quiz.getTimeStart()));
+                Timestamp.valueOf(quiz.getTimeStart()),
+                quiz.getTimeEnd() == null ? null : Timestamp.valueOf(quiz.getTimeEnd())
+        );
     }
+
 
     public List<Quiz> findByUser(int userId) {
         String sql = "SELECT * FROM Quiz WHERE user_id = ?";
@@ -52,7 +55,10 @@ public class QuizDao {
 
     public int updateEndTime(int quizId, LocalDateTime endTime) {
         String sql = "UPDATE Quiz SET time_end = ? WHERE quiz_id = ?";
-        return jdbcTemplate.update(sql, Timestamp.valueOf(endTime), quizId);
+        return jdbcTemplate.update(sql,
+                (endTime == null ? null : Timestamp.valueOf(endTime)),
+                quizId
+        );
     }
 
     public List<Quiz> findAll() {
