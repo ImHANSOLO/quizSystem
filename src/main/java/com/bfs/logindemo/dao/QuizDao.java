@@ -43,7 +43,7 @@ public class QuizDao {
 
 
     public List<Quiz> findByUser(int userId) {
-        String sql = "SELECT * FROM Quiz WHERE user_id = ?";
+        String sql = "SELECT * FROM Quiz WHERE user_id = ? ORDER BY time_end DESC";
         return jdbcTemplate.query(sql, rowMapper, userId);
     }
 
@@ -75,7 +75,7 @@ public class QuizDao {
     }
 
     public List<Quiz> findByCategory(int categoryId) {
-        String sql = "SELECT * FROM Quiz WHERE category_id = ? ORDER BY quiz_id DESC";
+        String sql = "SELECT * FROM Quiz WHERE category_id = ? ORDER BY time_end DESC";
         return jdbcTemplate.query(sql, rowMapper, categoryId);
     }
 }

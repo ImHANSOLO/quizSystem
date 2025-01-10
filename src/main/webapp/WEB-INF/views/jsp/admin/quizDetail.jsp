@@ -1,10 +1,3 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: dell
-  Date: 2025/1/9
-  Time: 21:59
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
@@ -24,15 +17,41 @@
 <hr/>
 <h2>Questions:</h2>
 <c:forEach var="qq" items="${quizQuestions}">
-  <p>
-    QQ ID: <c:out value="${qq.qqId}" /><br/>
-    Question ID: <c:out value="${qq.questionId}" /><br/>
-    User Choice: <c:out value="${qq.userChoiceId}" /><br/>
-  </p>
+  <h3>Question: <c:out value="${qq.question.description}"/></h3>
+
+  <!-- userChoiceId -->
+  <c:choose>
+    <c:when test="${qq.userChoiceId != null}">
+      <!-- Find the choice selected by the user and display the description + true or false -->
+      <c:set var="userChosen" value=""/>
+      <!-- Iterate over the choices of the question, finding the choice corresponding to userChoiceId -->
+      <c:forEach var="ch" items="${qq.question.choices}">
+        <c:if test="${ch.choiceId eq qq.userChoiceId}">
+          <!-- userChosen = ch.description -->
+          <c:set var="userChosen" value="${ch.description}" />
+          <c:set var="isCorrect" value="${ch.correct}" />
+        </c:if>
+      </c:forEach>
+      <p>
+        You chose: <c:out value="${userChosen}"/> -
+        <c:choose>
+          <c:when test="${isCorrect}">
+            <span style="color:green">Correct</span>
+          </c:when>
+          <c:otherwise>
+            <span style="color:red">Wrong</span>
+          </c:otherwise>
+        </c:choose>
+      </p>
+    </c:when>
+    <c:otherwise>
+      <p style="color:gray">No choice selected</p>
+    </c:otherwise>
+  </c:choose>
+
   <hr/>
 </c:forEach>
 
 <a href="${pageContext.request.contextPath}/admin/quizManagement">Back to Management</a>
 </body>
 </html>
-

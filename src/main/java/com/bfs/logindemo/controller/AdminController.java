@@ -3,6 +3,7 @@ package com.bfs.logindemo.controller;
 import com.bfs.logindemo.domain.Contact;
 import com.bfs.logindemo.domain.*;
 import com.bfs.logindemo.service.*;
+import com.bfs.logindemo.dao.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +23,8 @@ public class AdminController {
     private final QuizService quizService;
 
     private final QuestionService questionService;
+
+//    private final ChoiceDao choiceDao;
 
     public AdminController(JdbcTemplate jdbcTemplate, UserService userService,
                            ContactService contactService,
@@ -90,10 +93,9 @@ public class AdminController {
         if (user == null || !user.isAdmin()) {
             return "redirect:/";
         }
-        // Load all categories
+        // load all categories
         model.addAttribute("categories", categoryService.findAll());
-
-        // Load all questions
+        // load all questions
         model.addAttribute("questions", questionService.findAllQuestions());
 
         return "admin/questionManagement";
@@ -114,6 +116,87 @@ public class AdminController {
         q.setActive(isActive);
         questionService.createQuestion(q);
 
+        return "redirect:/admin/questionManagement";
+    }
+
+    // show add page
+    @GetMapping("/questionAdd")
+    public String showAddQuestionPage(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("loggedUser");
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+        model.addAttribute("categories", categoryService.findAll());
+        return "admin/questionAdd";
+    }
+
+    // 2) Handle form submission from questionAdd
+    @PostMapping("/questionAdd")
+    public String doAddQuestion(@RequestParam int categoryId,
+                                @RequestParam String description,
+                                @RequestParam(defaultValue="false") boolean active,
+                                @RequestParam List<String> choiceDesc,
+                                @RequestParam int correctIndex,
+                                HttpSession session) {
+        User user = (User) session.getAttribute("loggedUser");
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+
+        int questionId = questionService.createQuestion(categoryId, description, active);
+        // create choices
+        for (int i=0; i<choiceDesc.size(); i++){
+            boolean isCorrect = (i == correctIndex);
+            questionService.createChoice(questionId, choiceDesc.get(i), isCorrect);
+        }
+
+        return "redirect:/admin/questionManagement";
+    }
+
+    // show edit
+    @GetMapping("/questionEdit")
+    public String showEditQuestionPage(@RequestParam int questionId,
+                                       HttpSession session,
+                                       Model model) {
+        User user = (User) session.getAttribute("loggedUser");
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+        Question q = questionService.findById(questionId);
+        if (q == null) {
+            return "redirect:/admin/questionManagement";
+        }
+
+        model.addAttribute("question", q);
+        model.addAttribute("choices", questionService.findChoicesByQuestion(questionId));
+        model.addAttribute("categories", categoryService.findAll());
+        return "admin/questionEdit";
+    }
+
+    // handle edit
+    @PostMapping("/questionEdit")
+    public String doEditQuestion(@RequestParam int questionId,
+                                 @RequestParam int categoryId,
+                                 @RequestParam String description,
+                                 @RequestParam(defaultValue="false") boolean active,
+                                 @RequestParam List<Integer> choiceIds,
+                                 @RequestParam List<String> choiceDesc,
+                                 @RequestParam int correctIndex,
+                                 HttpSession session) {
+        User user = (User) session.getAttribute("loggedUser");
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+
+        questionService.updateQuestion(questionId, categoryId, description, active);
+
+        // update choice
+        for (int i=0; i<choiceIds.size(); i++){
+            int chId = choiceIds.get(i);
+            String desc = choiceDesc.get(i);
+            boolean isCorrect = (i == correctIndex);
+            questionService.updateChoice(chId, desc, isCorrect);
+        }
         return "redirect:/admin/questionManagement";
     }
 
@@ -241,15 +324,18 @@ public class AdminController {
         if (quiz == null) {
             return "redirect:/admin/quizManagement";
         }
+
         // load QuizQuestions
         List<QuizQuestion> qqList = quizService.findQuizQuestions(quizId);
-        // check pass/fail
+
+        // isPass for entire quiz
         boolean pass = quizService.isPass(qqList);
         model.addAttribute("quiz", quiz);
         model.addAttribute("quizQuestions", qqList);
         model.addAttribute("passFail", pass ? "PASS" : "FAIL");
         return "admin/quizDetail";
     }
+
 
 
 }
