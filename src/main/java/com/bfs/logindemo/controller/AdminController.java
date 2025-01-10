@@ -41,7 +41,7 @@ public class AdminController {
     public String adminHome(HttpSession session) {
         User user = (User) session.getAttribute("loggedUser");
         if (user == null || !user.isAdmin()) {
-            return "redirect:/"; // If you are not logged in or are not an administrator, return to log-in page
+            return "redirect:/"; // If not logged in or not an administrator, return to log-in page
         }
         return "admin/adminHome";
     }
@@ -172,27 +172,24 @@ public class AdminController {
                                  Model model) {
         User user = (User) session.getAttribute("loggedUser");
         if (user == null || !user.isAdmin()) {
-            return "redirect:/";
+            return "redirect:/"; // only admin can access
         }
 
-        // List<Quiz>
         List<Quiz> results;
         if (filterUserId != null) {
-            // Filter by user
+            // if we have user filter
             results = quizService.findQuizzesByUser(filterUserId);
         } else if (filterCategoryId != null) {
-            // filter by category
+            // if we have category filter
             results = quizService.findQuizzesByCategory(filterCategoryId);
         } else {
-            // no filtering, choose all
-            results = quizService.findAllQuizzes();
+            // default => sorted desc
+            results = quizService.findAllQuizzesSortedDesc();
         }
 
         model.addAttribute("allQuizzes", results);
-
-        // Also provide a list of categories for the page so that the drop-down box
+        // also provide categories for filter
         model.addAttribute("categories", categoryService.findAll());
-
         return "admin/quizManagement";
     }
 
@@ -239,15 +236,18 @@ public class AdminController {
             return "redirect:/";
         }
 
-        // search quiz + quizQuestions
+        // find quiz
         Quiz quiz = quizService.findQuizById(quizId);
         if (quiz == null) {
             return "redirect:/admin/quizManagement";
         }
-
+        // load QuizQuestions
+        List<QuizQuestion> qqList = quizService.findQuizQuestions(quizId);
+        // check pass/fail
+        boolean pass = quizService.isPass(qqList);
         model.addAttribute("quiz", quiz);
-        model.addAttribute("quizQuestions", quizService.findQuizQuestions(quizId));
-
+        model.addAttribute("quizQuestions", qqList);
+        model.addAttribute("passFail", pass ? "PASS" : "FAIL");
         return "admin/quizDetail";
     }
 

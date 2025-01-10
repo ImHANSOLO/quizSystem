@@ -112,4 +112,8 @@ public class QuizService {
     public List<Quiz> findQuizzesByCategory(int categoryId) {
         return quizDao.findByCategory(categoryId);
     }
+
+    public List<Quiz> findAllQuizzesSortedDesc() {
+        return quizDao.findAllSortedByTime();
+    }
 }

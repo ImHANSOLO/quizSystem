@@ -66,6 +66,14 @@ public class QuizDao {
         return jdbcTemplate.query(sql, rowMapper);
     }
 
+    public List<Quiz> findAllSortedByTime() {
+        String sql = "SELECT * FROM Quiz "
+                + "ORDER BY "
+                + "  CASE WHEN time_end IS NULL THEN time_start ELSE time_end END DESC";
+
+        return jdbcTemplate.query(sql, rowMapper);
+    }
+
     public List<Quiz> findByCategory(int categoryId) {
         String sql = "SELECT * FROM Quiz WHERE category_id = ? ORDER BY quiz_id DESC";
         return jdbcTemplate.query(sql, rowMapper, categoryId);
