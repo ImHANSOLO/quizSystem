@@ -5,16 +5,16 @@
     <title>Quiz Management</title>
 </head>
 <body>
-
 <h1>Quiz Management</h1>
 <form action="${pageContext.request.contextPath}/admin/quizManagement" method="get">
     UserId: <input type="text" name="filterUserId" />
-    Category: <select name="filterCategoryId">
-    <option value="">--All--</option>
-    <c:forEach var="cat" items="${categories}">
-        <option value="${cat.categoryId}">${cat.name}</option>
-    </c:forEach>
-</select>
+    Category:
+    <select name="filterCategoryId">
+        <option value="">--All--</option>
+        <c:forEach var="cat" items="${categories}">
+            <option value="${cat.categoryId}">${cat.name}</option>
+        </c:forEach>
+    </select>
     <button type="submit">Filter</button>
 </form>
 
@@ -31,19 +31,20 @@
     <c:forEach var="q" items="${allQuizzes}">
         <tr>
             <td><c:out value="${q.quizId}" /></td>
-            <td><c:out value="${q.userId}" /></td>
-            <td><c:out value="${q.categoryId}" /></td>
+            <!-- Instead of q.userId, do q.user.userId -->
+            <td><c:out value="${q.user.userId}" /></td>
+            <!-- Instead of q.categoryId => q.category.categoryId -->
+            <td><c:out value="${q.category.categoryId}" /></td>
             <td><c:out value="${q.name}" /></td>
             <td><c:out value="${q.timeStart}" /></td>
             <td><c:out value="${q.timeEnd}" /></td>
             <td>
-                <a href="${pageContext.request.contextPath}/admin/quizDetail?quizId=${q.quizId}">
+                <a href="${pageContext.request.contextPath}quizDetail?quizId=${q.quizId}">
                     Detail
                 </a>
             </td>
         </tr>
     </c:forEach>
 </table>
-
 </body>
 </html>

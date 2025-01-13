@@ -1,7 +1,7 @@
 package com.bfs.logindemo.service;
 
-import com.bfs.logindemo.dao.CategoryDao;
-import com.bfs.logindemo.domain.Category;
+import com.bfs.logindemo.entity.Category;
+import com.bfs.logindemo.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,31 +9,31 @@ import java.util.List;
 @Service
 public class CategoryService {
 
-    private final CategoryDao categoryDao;
+    private final CategoryRepository categoryRepo;
 
-    public CategoryService(CategoryDao categoryDao) {
-        this.categoryDao = categoryDao;
+    public CategoryService(CategoryRepository categoryRepo) {
+        this.categoryRepo = categoryRepo;
     }
 
     public List<Category> findAll() {
-        return categoryDao.findAll();
+        return categoryRepo.findAll();
     }
 
     public Category findById(int categoryId) {
-        return categoryDao.findById(categoryId);
+        return categoryRepo.findById(categoryId).orElse(null);
     }
 
     public void createCategory(String name) {
         Category c = new Category();
         c.setName(name);
-        categoryDao.insert(c);
+        categoryRepo.save(c);
     }
 
     public void updateCategory(int categoryId, String newName) {
-        categoryDao.updateName(categoryId, newName);
+        categoryRepo.updateName(categoryId, newName);
     }
 
     public void deleteCategory(int categoryId) {
-        categoryDao.delete(categoryId);
+        categoryRepo.deleteById(categoryId);
     }
 }

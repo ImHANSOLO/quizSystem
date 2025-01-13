@@ -1,8 +1,8 @@
 package com.bfs.logindemo.controller;
 
-import com.bfs.logindemo.domain.Quiz;
-import com.bfs.logindemo.domain.QuizQuestion;
-import com.bfs.logindemo.domain.User;
+import com.bfs.logindemo.entity.Quiz;
+import com.bfs.logindemo.entity.QuizQuestion;
+import com.bfs.logindemo.entity.User;
 import com.bfs.logindemo.service.QuizService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,7 +42,7 @@ public class QuizController {
             return "redirect:/";
         }
         Quiz quiz = quizService.findQuizById(quizId);
-        if (quiz == null || quiz.getUserId() != user.getUserId()) {
+        if (quiz == null || !quiz.getUser().getUserId().equals(user.getUserId())) {
             return "redirect:/home";
         }
 
@@ -88,7 +88,7 @@ public class QuizController {
         if (user == null) return "redirect:/";
 
         Quiz quiz = quizService.findQuizById(quizId);
-        if (quiz == null || quiz.getUserId() != user.getUserId()) {
+        if (quiz == null || !quiz.getUser().getUserId().equals(user.getUserId())) {
             return "redirect:/home";
         }
 

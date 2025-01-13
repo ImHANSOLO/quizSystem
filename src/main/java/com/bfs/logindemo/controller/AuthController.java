@@ -1,6 +1,6 @@
 package com.bfs.logindemo.controller;
 
-import com.bfs.logindemo.domain.User;
+import com.bfs.logindemo.entity.User;
 import com.bfs.logindemo.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

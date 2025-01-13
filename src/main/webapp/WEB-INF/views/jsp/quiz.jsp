@@ -24,7 +24,9 @@
                 <input type="radio"
                        name="userChoice_${qq.qqId}"
                        value="${ch.choiceId}"
-                <c:if test="${qq.userChoiceId eq ch.choiceId}">checked</c:if>
+                        <c:if test="${qq.userChoice != null and qq.userChoice.choiceId eq ch.choiceId}">
+                            checked
+                        </c:if>
                 />
                 <c:out value="${ch.description}"/>
             </label>

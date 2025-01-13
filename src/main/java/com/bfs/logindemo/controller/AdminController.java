@@ -1,10 +1,11 @@
 package com.bfs.logindemo.controller;
 
-import com.bfs.logindemo.domain.Contact;
-import com.bfs.logindemo.domain.*;
+import com.bfs.logindemo.entity.Contact;
+import com.bfs.logindemo.entity.Question;
+import com.bfs.logindemo.entity.Quiz;
+import com.bfs.logindemo.entity.QuizQuestion;
+import com.bfs.logindemo.entity.User;
 import com.bfs.logindemo.service.*;
-import com.bfs.logindemo.dao.*;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,22 +17,18 @@ import java.util.List;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private final JdbcTemplate jdbcTemplate;
     private final UserService userService;
     private final ContactService contactService;
     private final CategoryService categoryService;
     private final QuizService quizService;
-
     private final QuestionService questionService;
 
-//    private final ChoiceDao choiceDao;
-
-    public AdminController(JdbcTemplate jdbcTemplate, UserService userService,
+    // Remove JdbcTemplate from constructor
+    public AdminController(UserService userService,
                            ContactService contactService,
                            CategoryService categoryService,
                            QuizService quizService,
                            QuestionService questionService) {
-        this.jdbcTemplate = jdbcTemplate;
         this.userService = userService;
         this.contactService = contactService;
         this.categoryService = categoryService;
@@ -44,7 +41,7 @@ public class AdminController {
     public String adminHome(HttpSession session) {
         User user = (User) session.getAttribute("loggedUser");
         if (user == null || !user.isAdmin()) {
-            return "redirect:/"; // If not logged in or not an administrator, return to log-in page
+            return "redirect:/";
         }
         return "admin/adminHome";
     }
@@ -87,6 +84,7 @@ public class AdminController {
         return "admin/contactManagement";
     }
 
+    // question management
     @GetMapping("/questionManagement")
     public String questionManagement(HttpSession session, Model model) {
         User user = (User) session.getAttribute("loggedUser");
@@ -97,25 +95,30 @@ public class AdminController {
         model.addAttribute("categories", categoryService.findAll());
         // load all questions
         model.addAttribute("questions", questionService.findAllQuestions());
-
         return "admin/questionManagement";
     }
 
+    // Add question (small form)
     @PostMapping("/addQuestion")
     public String addQuestion(@RequestParam int categoryId,
                               @RequestParam String description,
-                              @RequestParam(required = false, defaultValue = "true") boolean isActive,
+                              @RequestParam(defaultValue = "true") boolean isActive,
                               HttpSession session) {
         User user = (User) session.getAttribute("loggedUser");
         if (user == null || !user.isAdmin()) {
             return "redirect:/";
         }
+
+        // Instead of q.setCategoryId(categoryId), we do:
         Question q = new Question();
-        q.setCategoryId(categoryId);
         q.setDescription(description);
         q.setActive(isActive);
-        questionService.createQuestion(q);
 
+        // fetch the Category
+        // then q.setCategory(category)
+        q.setCategory(categoryService.findById(categoryId));
+
+        questionService.createQuestion(q);
         return "redirect:/admin/questionManagement";
     }
 
@@ -130,7 +133,7 @@ public class AdminController {
         return "admin/questionAdd";
     }
 
-    // 2) Handle form submission from questionAdd
+    // 2) big form for questionAdd
     @PostMapping("/questionAdd")
     public String doAddQuestion(@RequestParam int categoryId,
                                 @RequestParam String description,
@@ -143,13 +146,14 @@ public class AdminController {
             return "redirect:/";
         }
 
+        // create question from raw params
         int questionId = questionService.createQuestion(categoryId, description, active);
+
         // create choices
-        for (int i=0; i<choiceDesc.size(); i++){
+        for (int i = 0; i < choiceDesc.size(); i++) {
             boolean isCorrect = (i == correctIndex);
             questionService.createChoice(questionId, choiceDesc.get(i), isCorrect);
         }
-
         return "redirect:/admin/questionManagement";
     }
 
@@ -162,6 +166,7 @@ public class AdminController {
         if (user == null || !user.isAdmin()) {
             return "redirect:/";
         }
+
         Question q = questionService.findById(questionId);
         if (q == null) {
             return "redirect:/admin/questionManagement";
@@ -190,8 +195,8 @@ public class AdminController {
 
         questionService.updateQuestion(questionId, categoryId, description, active);
 
-        // update choice
-        for (int i=0; i<choiceIds.size(); i++){
+        // update each choice
+        for (int i = 0; i < choiceIds.size(); i++) {
             int chId = choiceIds.get(i);
             String desc = choiceDesc.get(i);
             boolean isCorrect = (i == correctIndex);
@@ -200,20 +205,25 @@ public class AdminController {
         return "redirect:/admin/questionManagement";
     }
 
-    // update questions
+    // update question (small form)
     @PostMapping("/updateQuestion")
     public String updateQuestion(@RequestParam int questionId,
                                  @RequestParam int categoryId,
                                  @RequestParam String description,
-                                 @RequestParam(required = false, defaultValue = "true") boolean isActive,
+                                 @RequestParam(defaultValue = "true") boolean isActive,
                                  HttpSession session) {
         User user = (User) session.getAttribute("loggedUser");
         if (user == null || !user.isAdmin()) {
             return "redirect:/";
         }
+
+        // load existing question
         Question existing = questionService.findById(questionId);
         if (existing != null) {
-            existing.setCategoryId(categoryId);
+            // set new props
+            // old: existing.setCategoryId(categoryId)
+            existing.setCategory(categoryService.findById(categoryId));
+
             existing.setDescription(description);
             existing.setActive(isActive);
             questionService.updateQuestion(existing);
@@ -221,7 +231,7 @@ public class AdminController {
         return "redirect:/admin/questionManagement";
     }
 
-    // delete questions
+    // delete question
     @PostMapping("/deleteQuestion")
     public String deleteQuestion(@RequestParam int questionId,
                                  HttpSession session) {
@@ -233,7 +243,7 @@ public class AdminController {
         return "redirect:/admin/questionManagement";
     }
 
-    // Activate/deactivate topic
+    // activate/deactivate question
     @PostMapping("/toggleQuestionActive")
     public String toggleQuestionActive(@RequestParam int questionId,
                                        @RequestParam boolean isActive,
@@ -246,8 +256,7 @@ public class AdminController {
         return "redirect:/admin/questionManagement";
     }
 
-
-    // Test result management
+    // quiz management
     @GetMapping("/quizManagement")
     public String quizManagement(HttpSession session,
                                  @RequestParam(required = false) Integer filterUserId,
@@ -255,27 +264,22 @@ public class AdminController {
                                  Model model) {
         User user = (User) session.getAttribute("loggedUser");
         if (user == null || !user.isAdmin()) {
-            return "redirect:/"; // only admin can access
+            return "redirect:/";
         }
 
         List<Quiz> results;
         if (filterUserId != null) {
-            // if we have user filter
             results = quizService.findQuizzesByUser(filterUserId);
         } else if (filterCategoryId != null) {
-            // if we have category filter
             results = quizService.findQuizzesByCategory(filterCategoryId);
         } else {
-            // default => sorted desc
             results = quizService.findAllQuizzesSortedDesc();
         }
 
         model.addAttribute("allQuizzes", results);
-        // also provide categories for filter
         model.addAttribute("categories", categoryService.findAll());
         return "admin/quizManagement";
     }
-
 
     @PostMapping("/addCategory")
     public String addCategory(@RequestParam String name, HttpSession session) {
@@ -319,23 +323,17 @@ public class AdminController {
             return "redirect:/";
         }
 
-        // find quiz
         Quiz quiz = quizService.findQuizById(quizId);
         if (quiz == null) {
             return "redirect:/admin/quizManagement";
         }
 
-        // load QuizQuestions
         List<QuizQuestion> qqList = quizService.findQuizQuestions(quizId);
-
-        // isPass for entire quiz
         boolean pass = quizService.isPass(qqList);
+
         model.addAttribute("quiz", quiz);
         model.addAttribute("quizQuestions", qqList);
         model.addAttribute("passFail", pass ? "PASS" : "FAIL");
         return "admin/quizDetail";
     }
-
-
-
 }

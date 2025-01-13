@@ -25,7 +25,7 @@
         Name: <c:out value="${q.name}"/> -
         Start: <c:out value="${q.timeStart}"/> -
         End: <c:out value="${q.timeEnd}"/>
-        [ <a href="${pageContext.request.contextPath}/quiz/result?quizId=${q.quizId}">View Result</a> ]
+        [ <a href="${pageContext.request.contextPath}quiz/result?quizId=${q.quizId}">View Result</a> ]
     </p>
 </c:forEach>
 

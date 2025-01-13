@@ -4,7 +4,6 @@
 <html>
 <head><title>Quiz Result</title></head>
 <body>
-<!-- Include navbar if needed -->
 <jsp:include page="/WEB-INF/views/jsp/partials/navbar.jsp" />
 
 <h1>Quiz Result: <c:out value="${quiz.quizId}"/></h1>
@@ -12,7 +11,6 @@
 <p>Start Time: <c:out value="${quiz.timeStart}"/></p>
 <p>End Time: <c:out value="${quiz.timeEnd}"/></p>
 
-<!-- New PASS/FAIL display -->
 <c:choose>
     <c:when test="${passFail eq 'PASS'}">
         <h2 style="color:green;">Congratulations! You passed.</h2>
@@ -26,12 +24,19 @@
 <c:forEach var="qq" items="${quizQuestions}">
     <p>
         QQ ID: <c:out value="${qq.qqId}"/> |
-        Question ID: <c:out value="${qq.questionId}"/> |
-        Choice ID: <c:out value="${qq.userChoiceId}"/>
+        Question ID: <c:out value="${qq.question.questionId}"/> |
+        Choice ID:
+        <c:choose>
+            <c:when test="${qq.userChoice != null}">
+                <c:out value="${qq.userChoice.choiceId}"/>
+            </c:when>
+            <c:otherwise>
+                (none)
+            </c:otherwise>
+        </c:choose>
     </p>
 </c:forEach>
 
 <a href="${pageContext.request.contextPath}/home">Take Another Quiz</a>
-
 </body>
 </html>

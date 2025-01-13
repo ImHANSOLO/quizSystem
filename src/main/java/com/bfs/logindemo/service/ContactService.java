@@ -1,24 +1,28 @@
 package com.bfs.logindemo.service;
 
-import com.bfs.logindemo.dao.ContactDao;
-import com.bfs.logindemo.domain.Contact;
+import com.bfs.logindemo.entity.Contact;
+import com.bfs.logindemo.repository.ContactRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class ContactService {
-    private final ContactDao contactDao;
+    private final ContactRepository contactRepo;
 
-    public ContactService(ContactDao contactDao) {
-        this.contactDao = contactDao;
+    public ContactService(ContactRepository contactRepo) {
+        this.contactRepo = contactRepo;
     }
 
     public void submitContact(Contact contact) {
-        contactDao.save(contact);
+        contactRepo.save(contact);
     }
 
     public List<Contact> listAllContacts() {
-        return contactDao.findAll();
+        return contactRepo.findAllOrderByTimeDesc();
+    }
+
+    public Contact findById(int contactId) {
+        return contactRepo.findById(contactId).orElse(null);
     }
 }

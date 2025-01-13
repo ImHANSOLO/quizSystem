@@ -1,6 +1,6 @@
 package com.bfs.logindemo.controller;
 
-import com.bfs.logindemo.domain.User;
+import com.bfs.logindemo.entity.User;
 import com.bfs.logindemo.service.CategoryService;
 import com.bfs.logindemo.service.QuizService;
 import org.springframework.stereotype.Controller;

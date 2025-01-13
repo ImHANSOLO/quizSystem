@@ -7,8 +7,10 @@
 <body>
 <h1>Quiz Detail</h1>
 <p>Quiz ID: <c:out value="${quiz.quizId}" /></p>
-<p>User ID: <c:out value="${quiz.userId}" /></p>
-<p>Category: <c:out value="${quiz.categoryId}" /></p>
+<!-- Instead of quiz.userId => quiz.user.userId -->
+<p>User ID: <c:out value="${quiz.user.userId}" /></p>
+<!-- Instead of quiz.categoryId => quiz.category.categoryId -->
+<p>Category: <c:out value="${quiz.category.categoryId}" /></p>
 <p>Name: <c:out value="${quiz.name}" /></p>
 <p>Start Time: <c:out value="${quiz.timeStart}" /></p>
 <p>End Time: <c:out value="${quiz.timeEnd}" /></p>
@@ -18,16 +20,13 @@
 <h2>Questions:</h2>
 <c:forEach var="qq" items="${quizQuestions}">
   <h3>Question: <c:out value="${qq.question.description}"/></h3>
-
-  <!-- userChoiceId -->
   <c:choose>
-    <c:when test="${qq.userChoiceId != null}">
-      <!-- Find the choice selected by the user and display the description + true or false -->
+    <c:when test="${qq.userChoice != null}">
       <c:set var="userChosen" value=""/>
-      <!-- Iterate over the choices of the question, finding the choice corresponding to userChoiceId -->
+      <c:set var="isCorrect" value="false"/>
+
       <c:forEach var="ch" items="${qq.question.choices}">
-        <c:if test="${ch.choiceId eq qq.userChoiceId}">
-          <!-- userChosen = ch.description -->
+        <c:if test="${ch.choiceId eq qq.userChoice.choiceId}">
           <c:set var="userChosen" value="${ch.description}" />
           <c:set var="isCorrect" value="${ch.correct}" />
         </c:if>
@@ -48,7 +47,6 @@
       <p style="color:gray">No choice selected</p>
     </c:otherwise>
   </c:choose>
-
   <hr/>
 </c:forEach>
 

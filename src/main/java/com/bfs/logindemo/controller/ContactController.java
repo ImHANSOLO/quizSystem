@@ -1,6 +1,6 @@
 package com.bfs.logindemo.controller;
 
-import com.bfs.logindemo.domain.Contact;
+import com.bfs.logindemo.entity.Contact;
 import com.bfs.logindemo.service.ContactService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

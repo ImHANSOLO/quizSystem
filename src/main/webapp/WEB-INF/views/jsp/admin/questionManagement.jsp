@@ -17,11 +17,12 @@
     <c:forEach var="q" items="${questions}">
         <tr>
             <td><c:out value="${q.questionId}"/></td>
-            <td><c:out value="${q.categoryId}"/></td>
+            <!-- Instead of q.categoryId, do q.category.categoryId -->
+            <td><c:out value="${q.category.categoryId}"/></td>
             <td><c:out value="${q.description}"/></td>
             <td><c:out value="${q.active}"/></td>
             <td>
-                <a href="${pageContext.request.contextPath}/admin/questionEdit?questionId=${q.questionId}">
+                <a href="${pageContext.request.contextPath}questionEdit?questionId=${q.questionId}">
                     Edit
                 </a>
             </td>
